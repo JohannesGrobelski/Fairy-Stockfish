@@ -138,7 +138,7 @@ extern "C" {
      * @return Starting FEN string
      */
     JNIEXPORT jstring JNICALL
-    Java_emerald_apps_fairychess_model_board_Chessboard_startFen(JNIEnv* env, jobject, jstring variant) {
+    Java_emerald_apps_fairychess_model_board_Chessboard_startFen(JNIEnv* env, jobject, jstring variant, jboolean chess960) {
         const char* variantStr = env->GetStringUTFChars(variant, nullptr);
         jstring result = env->NewStringUTF(variants.find(string(variantStr))->second->startFen.c_str());
         env->ReleaseStringUTFChars(variant, variantStr);
@@ -427,7 +427,7 @@ extern "C" {
     */
     JNIEXPORT jstring JNICALL
     Java_emerald_apps_fairychess_model_board_Chessboard_calcBestMove(JNIEnv* env, jobject,
-                                                     jstring variant, jstring fen, int depth, int movetime) {
+                                                     jstring variant, jstring fen, int depth, int movetime, jboolean chess960) {
         Position pos;
         StateListPtr states(new std::deque<StateInfo>(1));
         std::vector<std::string> moveList;
@@ -435,7 +435,7 @@ extern "C" {
         const char* variantStr = env->GetStringUTFChars(variant, nullptr);
         const char* fenStr = env->GetStringUTFChars(fen, nullptr);
 
-        buildPosition(pos, states, variantStr, fenStr, moveList, false);
+        buildPosition(pos, states, variantStr, fenStr, moveList, chess960);
 
         // Set search parameters
         Search::LimitsType limits;
@@ -481,14 +481,15 @@ extern "C" {
      */
     JNIEXPORT jboolean JNICALL
     Java_emerald_apps_fairychess_model_board_Chessboard_isLegalMove(JNIEnv* env, jobject,
-                                                    jstring fen, jstring move) {
+                                                                    jstring variant, jstring fen, jstring move, jboolean chess960) {
         Position pos;
         StateListPtr states(new std::deque<StateInfo>(1));
         const char* fenStr = env->GetStringUTFChars(fen, nullptr);
         const char* moveStr = env->GetStringUTFChars(move, nullptr);
         auto move_str = std::string(env->GetStringUTFChars(move, nullptr));
+        const char* variantStr = env->GetStringUTFChars(variant, nullptr);
 
-        buildPosition(pos, states, "chess", fenStr, {}, false);
+        buildPosition(pos, states, variantStr, fenStr, {}, chess960);
         Move m = UCI::to_move(pos, move_str);
         jboolean result = MoveList<LEGAL>(pos).contains(m);
 
