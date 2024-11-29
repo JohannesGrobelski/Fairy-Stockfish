@@ -93,6 +93,10 @@ See the [Fairy-Stockfish Wiki](https://github.com/fairy-stockfish/Fairy-Stockfis
 
 Besides the C++ engine, this project also includes bindings for other programming languages in order to be able to use it as a library for chess variants. They support move, SAN, and FEN generation, as well as checking of game end conditions for all variants supported by Fairy-Stockfish. Since the bindings are using the C++ code, they are very performant compared to libraries directly written in the respective target language.
 
+### Java
+
+The Java binding (JFFish) is implemented in [jffish.cpp](https://github.com/JohannesGrobelski/JFFish/blob/master/src/jffish.cpp) and provides a JNI interface to access Fairy-Stockfish functionality from Java applications. Like the other bindings, it supports move generation, board manipulation, and game validation for all Fairy-Stockfish variants. It also contains a The binding is designed to integrate smoothly with Android applications, making it particularly useful for mobile chess variant development.
+
 ### Python
 
 The python binding [pyffish](https://pypi.org/project/pyffish/) contributed by [@gbtami](https://github.com/gbtami) is implemented in [pyffish.cpp](https://github.com/fairy-stockfish/Fairy-Stockfish/blob/master/src/pyffish.cpp). It is e.g. used in the backend for the [pychess server](https://github.com/gbtami/pychess-variants).
