@@ -245,22 +245,55 @@ extern "C" {
         return result;
     }
 
-    /**
-    * Gets game result
-    * @return 1 for white win, -1 for black win, 0 for draw
-    */
-    JNIEXPORT jint JNICALL
-    Java_emerald_apps_fairychess_model_board_Chessboard_getGameResult(JNIEnv* env, jobject) {
-        Position pos;
-        Value result;
-        if (pos.is_immediate_game_end(result)) {
-            return result > VALUE_DRAW ? 1 : (result < VALUE_DRAW ? -1 : 0);
-        }
-        if (pos.checkers()) {
-            return pos.checkmate_value() > VALUE_DRAW ? 1 : -1;
-        }
-        return 0; // Draw
+/**
+* Gets game result
+* @param variant Variant name
+* @param fen Position FEN
+* @param moves Previous moves
+* @param chess960 Chess960 mode flag
+* @return 1 for white win, -1 for black win, 0 for draw
+*/
+JNIEXPORT jstring JNICALL
+Java_emerald_apps_fairychess_model_board_Chessboard_getGameResult(JNIEnv* env, jobject,
+                                                                  jstring variant, jstring fen, jobjectArray moves, jboolean chess960) {
+    Position pos;
+    StateListPtr states(new deque<StateInfo>(1));
+    vector<string> moveList;
+
+    // Convert Java string array to C++ vector
+    jsize len = env->GetArrayLength(moves);
+    for(jsize i = 0; i < len; i++) {
+        auto move = (jstring)env->GetObjectArrayElement(moves, i);
+        moveList.push_back(env->GetStringUTFChars(move, nullptr));
     }
+
+    // Get variant and FEN strings
+    const char* variantStr = env->GetStringUTFChars(variant, nullptr);
+    const char* fenStr = env->GetStringUTFChars(fen, nullptr);
+
+    // Build the position with all necessary information
+    buildPosition(pos, states, variantStr, fenStr, moveList, chess960);
+
+    // Check game result
+    Value result;
+    const char * gameResult;
+
+    if (pos.is_immediate_game_end(result)) {
+        gameResult = result > VALUE_DRAW ? "white win" : (result < VALUE_DRAW ? "black win" : "draw");
+    }
+    else if (pos.checkers()) {
+        gameResult = pos.checkmate_value() > VALUE_DRAW ? "white win" : "black win";
+    }
+    else {
+        gameResult = ""; // Draw
+    }
+
+    // Clean up
+    env->ReleaseStringUTFChars(variant, variantStr);
+    env->ReleaseStringUTFChars(fen, fenStr);
+
+    return env->NewStringUTF(gameResult);
+}
 
     /**
     * Checks if move is a capture
